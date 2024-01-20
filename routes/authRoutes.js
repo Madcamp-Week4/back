@@ -5,16 +5,23 @@ const bcrypt = require('bcrypt');
 
 router.post('/login', async (req, res) => {
     try {
-        console.log("요청 받음:", req.body);
         const { username, password } = req.body;
         const user = await User.findOne({ username });
-        console.log("데이터베이스 조회 결과:", user);
-
-        if (user && user.password === password) {
-            res.status(200).send("로그인 성공!");
-        } else {
-            res.status(400).send("아이디 또는 비밀번호가 잘못되었습니다.");
+        if (!user) {
+            return res.status(400).send("아이디 또는 비밀번호가 잘못되었습니다.");
         }
+
+        // 비밀번호 비교
+        const isValid = await bcrypt.compare(password, user.password);
+        if (!isValid) {
+            return res.status(400).send("아이디 또는 비밀번호가 잘못되었습니다.");
+        }
+
+        const userInfo = {
+            username: user.username,
+            email: user.email
+        };
+        res.status(200).json({ message: "로그인 성공!", user: userInfo });
     } catch (err) {
         console.error(err);
         res.status(500).send("서버 오류");
