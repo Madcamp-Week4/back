@@ -1,12 +1,8 @@
 const express = require('express');
-const mongoose = require('mongoose');
-// const Grid = require('gridfs-stream');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
-// const uploadRoutes = require('./routes/uploadRoutes');
-// const downloadRoutes = require('./routes/downloadRoutes');
 const fileRoutes = require('./routes/fileRoutes');
 
 const app = express();
@@ -22,8 +18,6 @@ app.use(cors({
 }));
 
 app.use('/auth', authRoutes);
-// app.use('/upload', uploadRoutes);
-// app.use('/download', downloadRoutes);
 app.use('/files', fileRoutes);
 
 app.listen(port, '0.0.0.0', () => {

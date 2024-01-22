@@ -8,13 +8,13 @@ router.post('/login', async (req, res) => {
         const { username, password } = req.body;
         const user = await User.findOne({ username });
         if (!user) {
-            return res.status(400).send("아이디 또는 비밀번호가 잘못되었습니다.");
+            return res.status(400).send("아이디가 잘못되었습니다.");
         }
 
         // 비밀번호 비교
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
-            return res.status(400).send("아이디 또는 비밀번호가 잘못되었습니다.");
+            return res.status(400).send("비밀번호가 잘못되었습니다.");
         }
 
         const userInfo = {
