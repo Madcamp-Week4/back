@@ -3,8 +3,9 @@ const multer = require('multer');
 const router = express.Router();
 const generateRandomKey = require('../config/key');
 const File = require('../models/FileModel');
-const bcrypt = require('bcrypt');
+// const bcrypt = require('bcrypt');
 const fs = require('fs');
+const path = require('path');
 
 // Multer 설정: 메모리 스토리지 사용
 const storage = multer.memoryStorage();
@@ -22,16 +23,20 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     const key = generateRandomKey();
     const useremail = req.body.email;
     // 비밀번호 해시 생성
-    const salt = await bcrypt.genSalt(10);
-    const hashedKey = await bcrypt.hash(key, salt);
-    
+    // const salt = await bcrypt.genSalt(10);
+    // const hashedKey = await bcrypt.hash(key, salt);
+    // 파일 확장자 추출
+    const extension = path.extname(req.file.originalname);
+
     // 파일 정보 저장
     const file = new File({
-        filename: req.file.filename,
+        filename: req.file.originalname,
         filedata: filedata,
+        extension: extension,
         path: req.file.path,
         size: req.file.size,
-        key: hashedKey,
+        // key: hashedKey,
+        key: key,
         email: useremail
     });
 
@@ -45,7 +50,7 @@ router.post('/find', async (req, res) => {
         const { email } = req.body; // 클라이언트에서 보낸 이메일 추출
 
         // 해당 이메일과 일치하는 파일 정보 검색
-        const files = await File.find({ email: email }).select('filename size -_id');
+        const files = await File.find({ email: email }).select('filename size key -_id');
         
         // 파일 정보 응답
         res.status(200).json({ files: files });

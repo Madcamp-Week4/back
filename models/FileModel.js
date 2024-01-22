@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const fileSchema = new mongoose.Schema({
     filename: String,
     filedata: String,
+    extension: String,
     path: String,
     size: Number,
     key: String,
