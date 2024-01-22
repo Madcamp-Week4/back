@@ -32,6 +32,12 @@ router.post('/signup', async (req, res) => {
     try {
         const { username, password, email } = req.body;
 
+        // 동일한 이메일로 가입된 사용자가 있는지 확인
+        const existingUser = await User.findOne({ email: email });
+        if (existingUser) {
+            return res.status(400).send('이미 사용중인 이메일입니다.');
+        }
+
         // 비밀번호 해시 생성
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
