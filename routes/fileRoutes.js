@@ -5,12 +5,60 @@ const File = require('../models/FileModel');
 const path = require('path');
 const generateUniqueKey = require('../config/key');
 
+const { createReadStream }= require('fs');
+const { createBucket } = require('mongoose-gridfs');
+const { Readable } = require('stream');
+const { ObjectID } = require('mongodb');
+
 // Multer 설정: 메모리 스토리지 사용
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const upload = multer({ storage: storage, limits: { fileSize: 1024 * 1024 * 18 },}).single('file');
 
-// 파일 업로드 라우트
-router.post('/upload', upload.single('file'), async (req, res) => {
+
+
+
+router.post('/uploadGrid', upload, async (req, res) => {
+    console.log(req.file);
+    //console.log(req);
+    if (!req.file) {
+        return res.status(400).send('No file uploaded');
+    }
+
+    try {
+    const bucket = createBucket();
+    //const Attachment = createModel();
+    //const readStream = createReadStream('sample.txt');
+    //const options = ({ filename: 'sample.txt', contentType: 'text/plain' });
+    //const filedata = req.file.buffer.toString('base64');
+    
+
+    if (!req.file.originalname) {
+        return res.status(400).json({ message: "No track name in request body" });
+    }
+    //const extension = path.extname(req.file.originalname);
+    const readStream = Readable.from(req.file.buffer);
+
+    const options = ({ filename: req.file.originalname, contenttype: 'image/png'});
+    bucket.writeFile(options, readStream, (err, file) => {
+        if (err) {
+            console.log(err);
+            return res.status(400).json({message: "Bad Request"+err});
+        } else {
+            //console.log("Posted! \n" + file.toString());
+            return res.status(200).json({
+                message: "Successfully Saved!",
+                file: file,
+        });
+        }
+    })
+
+    } catch(error) {
+        console.log(error);
+    }
+});
+
+
+router.post('/upload', upload, async (req, res) => {
     if (!req.file) {
         return res.status(400).send('No file uploaded');
     }

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { createModel } = require('mongoose-gridfs');
 require('dotenv').config();
 
 const connectDB = async () => {
@@ -6,7 +7,7 @@ const connectDB = async () => {
         await mongoose.connect(process.env.DB_URI, {
             dbName: "users"
         });
-
+        Attachment = createModel();
         console.log('MongoDB Connected...');
     } catch (err) {
         console.error(err.message);
