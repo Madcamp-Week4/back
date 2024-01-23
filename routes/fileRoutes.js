@@ -119,4 +119,21 @@ router.get('/download/:key', async (req, res) => {
     }
 });
 
+router.delete('/delete/:key', async (req, res) => {
+    try {
+        const Files_r = await File.deleteOne({ key: req.params.key });
+        //console.log(Files_r);
+        if (Files_r.deletedCount === 1) {
+            console.log("Successfully deleted one document.");
+          } else {
+            console.log("No documents matched the query. Deleted 0 documents.");
+          }
+          
+        res.status(200).send({ message: "File successfully deleted" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: "Error deleting the file" });
+    }
+});
+
 module.exports = router;
