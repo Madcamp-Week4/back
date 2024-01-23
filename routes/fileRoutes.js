@@ -96,6 +96,7 @@ router.get('/download/:key', async (req, res) => {
             case '.docx':
                 contentType = 'application/msword';
                 break;
+            case '.hwpx':
             case '.hwp':
                 contentType = 'application/x-hwp';
                 break;
@@ -128,7 +129,7 @@ router.delete('/delete/:key', async (req, res) => {
           } else {
             console.log("No documents matched the query. Deleted 0 documents.");
           }
-          
+
         res.status(200).send({ message: "File successfully deleted" });
     } catch (error) {
         console.error(error);
