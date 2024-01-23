@@ -13,6 +13,7 @@ connectDB();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cors({
+    exposedHeaders: ['Content-Disposition'],
     origin: true,
     credentials: true
 }));

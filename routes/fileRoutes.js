@@ -1,10 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const router = express.Router();
-const generateRandomKey = require('../config/key');
 const File = require('../models/FileModel');
-// const bcrypt = require('bcrypt');
-const fs = require('fs');
 const path = require('path');
 const generateUniqueKey = require('../config/key');
 
@@ -74,10 +71,46 @@ router.get('/download/:key', async (req, res) => {
         // Base64 인코딩된 데이터를 binary 데이터로 변환
         const fileContents = Buffer.from(file.filedata, 'base64');
 
+        // 파일 확장자에 따른 Content-Type 설정
+        let contentType = 'application/octet-stream'; // 기본값
+        switch (file.extension) {
+            case '.pdf':
+                contentType = 'application/pdf';
+                break;
+            case '.png':
+                contentType = 'image/png';
+                break;
+            case '.jpg':
+            case '.jpeg':
+                contentType = 'image/jpeg';
+                break;
+            case '.ppt':
+            case '.pptx':
+                contentType = 'application/vnd.ms-powerpoint';
+                break;
+            case '.xls':
+            case '.xlsx':
+                contentType = 'application/vnd.ms-excel';
+                break;
+            case '.doc':
+            case '.docx':
+                contentType = 'application/msword';
+                break;
+            case '.hwp':
+                contentType = 'application/x-hwp';
+                break;
+            case '.mp3':
+                contentType = 'audio/mpeg';
+                break;
+            case '.mp4':
+                contentType = 'video/mp4';
+                break;
+        }
+        
         // 클라이언트에게 파일 전송
         res.writeHead(200, {
             'Content-Disposition': `attachment; filename=${file.filename}`,
-            'Content-Type': 'application/octet-stream',
+            'Content-Type': contentType,
         });
         res.end(fileContents);
     } catch (error) {
