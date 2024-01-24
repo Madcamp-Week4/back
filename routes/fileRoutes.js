@@ -2,58 +2,71 @@ const express = require('express');
 const multer = require('multer');
 const router = express.Router();
 const File = require('../models/FileModel');
+//const FileGrid = require('../models/FileGridModel');
 const path = require('path');
 const generateUniqueKey = require('../config/key');
-
+const fs = require('fs');
 const { createReadStream }= require('fs');
-const { createBucket } = require('mongoose-gridfs');
+const { createBucket, createModel } = require('mongoose-gridfs');
+const fileUpload = require('express-fileupload');
+const { MongoClient, GridFSBucket, ObjectID } = require('mongodb');
+
 const { Readable } = require('stream');
-const { ObjectID } = require('mongodb');
+const getBucket = require('../config/bucket');
 
 // Multer 설정: 메모리 스토리지 사용
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage, limits: { fileSize: 1024 * 1024 * 18 },}).single('file');
 
 
+router.use(fileUpload({
+    useTempFiles : true,
+    tempFileDir : '/tmp/' // 임시 파일이 저장될 디렉토리
+  }));
 
-
-router.post('/uploadGrid', upload, async (req, res) => {
-    console.log(req.file);
+router.post('/uploadGrid', async (req, res) => {
+    //console.log(req.file);
+    console.log(req.files);
+    console.log(req.files.file);
     //console.log(req);
-    if (!req.file) {
+    if (!req.files || !req.files.file) {
         return res.status(400).send('No file uploaded');
     }
+    const file = req.files.file;
+    const bucketName = 'gridFiles';
 
     try {
-    const bucket = createBucket();
-    //const Attachment = createModel();
-    //const readStream = createReadStream('sample.txt');
-    //const options = ({ filename: 'sample.txt', contentType: 'text/plain' });
-    //const filedata = req.file.buffer.toString('base64');
-    
-
-    if (!req.file.originalname) {
-        return res.status(400).json({ message: "No track name in request body" });
-    }
-    //const extension = path.extname(req.file.originalname);
-    const readStream = Readable.from(req.file.buffer);
-
-    const options = ({ filename: req.file.originalname, contenttype: 'image/png'});
-    bucket.writeFile(options, readStream, (err, file) => {
-        if (err) {
-            console.log(err);
-            return res.status(400).json({message: "Bad Request"+err});
-        } else {
-            //console.log("Posted! \n" + file.toString());
-            return res.status(200).json({
+        const bucket = await getBucket(bucketName);
+        const uploadStream = bucket.openUploadStream(file.name);
+        fs.createReadStream(file.tempFilePath).pipe(uploadStream)
+          .on('error', (error) => {
+            res.status(500).send(error.message);
+          })
+          .on('finish', () => {
+          });
+        const extension = path.extname(file.name);
+        const key = await generateUniqueKey();
+        const file_upload = new File({
+                filename: file.name,
+                filedata: 'grid',
+                extension: extension,
+                path: file.path,
+                size: file.size,
+                // key: hashedKey,
+                key: key,
+                email: req.body.email
+            });
+        
+        file_upload.save();
+        return res.status(200).json({
                 message: "Successfully Saved!",
-                file: file,
-        });
-        }
-    })
-
-    } catch(error) {
+                file: file,  });
+        
+  } catch(error) {
         console.log(error);
+        return res.status(403).json({
+            message: "Save Failed!",
+            file: req.files.file,  });
     }
 });
 
@@ -115,10 +128,10 @@ router.get('/download/:key', async (req, res) => {
         if (!file) {
             return res.status(404).json({ message: 'File not found' });
         }
-
+        var filedata = file.filedata;
         // Base64 인코딩된 데이터를 binary 데이터로 변환
-        const fileContents = Buffer.from(file.filedata, 'base64');
-
+        var fileContents = Buffer.from(filedata, 'base64');
+        
         // 파일 확장자에 따른 Content-Type 설정
         let contentType = 'application/octet-stream'; // 기본값
         switch (file.extension) {
@@ -156,12 +169,26 @@ router.get('/download/:key', async (req, res) => {
                 break;
         }
         
+        if (file.filedata === 'grid') {
+            const bucketName = "gridFiles";
+            const bucket = await getBucket(bucketName);
+            const downloadStream = bucket.openDownloadStreamByName(file.filename);
+
+            downloadStream.on('file', (file) => {
+                res.setHeader('Content-Type', contentType);
+                res.setHeader('Content-Disposition', 'attachment; filename=' + file.filename);
+            });
+
+            downloadStream.pipe(res);
+        } else {
+
         // 클라이언트에게 파일 전송
         res.writeHead(200, {
-            'Content-Disposition': `attachment; filename=${file.filename}`,
-            'Content-Type': contentType,
+        'Content-Disposition': `attachment; filename=${file.filename}`,
+        'Content-Type': contentType,
         });
         res.end(fileContents);
+    }
     } catch (error) {
         console.error(error);
         res.status(500).send('Error downloading the file');

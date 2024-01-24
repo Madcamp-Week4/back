@@ -6,10 +6,12 @@ const authRoutes = require('./routes/authRoutes');
 const fileRoutes = require('./routes/fileRoutes');
 const mailRoutes = require('./routes/mailRoutes');
 
+
 const app = express();
 const port = 5000;
 
 connectDB();
+
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
