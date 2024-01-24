@@ -23,17 +23,21 @@ router.post('/send', async (req, res) => {
             return res.status(404).send('No files found for this email.');
         }
 
+        let emailBody = 
+        `<h1>Your Files</h1>
+        <p>Here are the files you requested:</p>
+        <ul>
+        ${files.map(file => `<li>Filename: ${file.filename}, Key: ${file.key}</li>`).join('')}
+        </ul>
+        <p>Thank you for using our service!</p>`
+
+
         // 이메일 보내기
         const mailOptions = {
             from: 'seoyunchocolate@gmail.com',
             to: email,
             subject: 'Your Files',
-            html: `<h1>Your Files</h1>
-                   <p>Here are the files you requested:</p>
-                   <ul>
-                   ${files.map(file => `<li>Filename: ${file.filename}, Key: ${file.key}</li>`).join('')}
-                   </ul>
-                   <p>Thank you for using our service!</p>`
+            text: emailBody
         };
 
         transporter.sendMail(mailOptions, function(error, info){

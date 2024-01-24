@@ -14,9 +14,6 @@ const { ObjectID } = require('mongodb');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage, limits: { fileSize: 1024 * 1024 * 18 },}).single('file');
 
-
-
-
 router.post('/uploadGrid', upload, async (req, res) => {
     console.log(req.file);
     //console.log(req);
@@ -30,6 +27,7 @@ router.post('/uploadGrid', upload, async (req, res) => {
     //const readStream = createReadStream('sample.txt');
     //const options = ({ filename: 'sample.txt', contentType: 'text/plain' });
     //const filedata = req.file.buffer.toString('base64');
+    
     
 
     if (!req.file.originalname) {
