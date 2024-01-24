@@ -1,7 +1,7 @@
 const { MongoClient, GridFSBucket, ObjectID } = require('mongodb');
 
 const uri = process.env.ATLAS_URI;
-const client = new MongoClient(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+const client = new MongoClient(process.env.DB_URI);
 
 async function getBucket(bucketName) {
   try {

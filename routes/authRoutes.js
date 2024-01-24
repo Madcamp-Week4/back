@@ -58,4 +58,22 @@ router.post('/signup', async (req, res) => {
     }
 });
 
+router.put('/edit', async (req, res) => {
+    const { email, newUsername } = req.body;
+
+    try {
+        // email을 사용하여 사용자 데이터베이스에서 사용자를 찾고, username을 업데이트
+        const updatedUser = await User.findOneAndUpdate({ email: email }, { username: newUsername }, { new: true });
+
+        if (updatedUser) {
+            res.status(200).json({ message: "사용자 이름이 성공적으로 업데이트되었습니다." });
+        } else {
+            res.status(404).json({ message: "해당 이메일을 가진 사용자를 찾을 수 없습니다." });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "사용자 이름 업데이트 중 오류가 발생했습니다." });
+    }
+});
+
 module.exports = router;
