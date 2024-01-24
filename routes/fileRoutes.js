@@ -218,6 +218,25 @@ router.get('/download/:key', async (req, res) => {
 
 router.delete('/delete/:key', async (req, res) => {
     try {
+        const file_to_delete = await File.findOne({key: req.params.key});
+        if (!file_to_delete) {
+            res.status(404).send({message:"file not found"});
+        }
+        if (file_to_delete.filedata === "grid") {
+            const bucketName = "gridFiles";
+            const bucket = await getBucket(bucketName);
+      
+            const files = await bucket.find({ filename: file_to_delete.filename }).toArray();
+            if (!files || files.length === 0) {
+              return res.status(404).send({ message: 'No file found' });
+            }
+      
+            // Assuming you want to delete the first file matching the filename
+            const fileId = files[0]._id;
+      
+            await bucket.delete(fileId);
+            console.log('GridFS delete success');
+          }
         const Files_r = await File.deleteOne({ key: req.params.key });
         //console.log(Files_r);
         if (Files_r.deletedCount === 1) {
@@ -225,7 +244,7 @@ router.delete('/delete/:key', async (req, res) => {
           } else {
             console.log("No documents matched the query. Deleted 0 documents.");
           }
-
+        
         res.status(200).send({ message: "File successfully deleted" });
     } catch (error) {
         console.error(error);
