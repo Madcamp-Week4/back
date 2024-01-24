@@ -28,6 +28,7 @@ router.post('/uploadGrid', async (req, res) => {
     //console.log(req.file);
     console.log(req.files);
     console.log(req.files.file);
+
     //console.log(req);
     if (!req.files || !req.files.file) {
         return res.status(400).send('No file uploaded');
@@ -59,6 +60,7 @@ router.post('/uploadGrid', async (req, res) => {
         
         file_upload.save();
         return res.status(200).json({
+
                 message: "Successfully Saved!",
                 file: file,  });
         

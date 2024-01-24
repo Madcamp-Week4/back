@@ -3,6 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
+const googleAuthRoutes = require('./routes/googleAuthRoutes');
 const fileRoutes = require('./routes/fileRoutes');
 const mailRoutes = require('./routes/mailRoutes');
 
@@ -22,6 +23,7 @@ app.use(cors({
 }));
 
 app.use('/auth', authRoutes);
+app.use('/google-auth', googleAuthRoutes);
 app.use('/files', fileRoutes);
 app.use('/mail', mailRoutes);
 
