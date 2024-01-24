@@ -55,7 +55,6 @@ router.post('/uploadGrid', upload, async (req, res) => {
     }
 });
 
-
 router.post('/upload', upload, async (req, res) => {
     if (!req.file) {
         return res.status(400).send('No file uploaded');
@@ -101,6 +100,26 @@ router.post('/find', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).send('파일 검색 중 오류 발생');
+    }
+});
+
+// 파일 수정 라우트
+router.put('/edit/:key', async (req, res) => {
+    const fileKey = req.params.key;
+    const newFilename = req.body.newFilename;
+
+    try {
+            // 파일 데이터베이스에서 fileKey를 찾아 newFilename으로 이름을 업데이트
+            const updatedFile = await File.findOneAndUpdate({ key: fileKey }, { filename: newFilename }, { new: true });
+    
+            if (!updatedFile) {
+                return res.status(404).json({ message: "파일을 찾을 수 없습니다." });
+            }
+    
+            res.status(200).json({ message: "파일이 성공적으로 수정되었습니다.", updatedFile });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "파일 수정 중 오류가 발생했습니다." });
     }
 });
 
